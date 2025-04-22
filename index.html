@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cultivation CYOA</title>
+    <style>
+        :root {
+            --bg-color: #0a0a12;
+            --text-color: #e0e0e8;
+            --accent-color: #8e44ad;
+            --header-color: #9b59b6;
+            --section-bg: rgba(30, 30, 40, 0.7);
+            --selected-bg: rgba(142, 68, 173, 0.3);
+            --button-bg: #6c3483;
+            --button-hover: #8e44ad;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            background-image: url("/api/placeholder/1200/800");
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: var(--header-color);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(142, 68, 173, 0.6);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--header-color);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            color: var(--header-color);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        .intro {
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section {
+            background-color: var(--section-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .points-tracker {
+            position: sticky;
+            top: 20px;
+            background-color: var(--section-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+
+        .option {
+            background-color: rgba(30, 30, 40, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option:hover {
+            background-color: rgba(50, 50, 60, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .option.selected {
+            background-color: var(--selected-bg);
+            border: 1px solid var(--accent-color);
+        }
+
+        .option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .option-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .option-cost {
+            background-color: var(--button-bg);
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .option-description {
+            color: #cccccc;
+        }
+
+        .reset-button, .next-section, .prev-section, .summary-button {
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: bold;
+        }
+
+        .reset-button:hover, .next-section:hover, .prev-section:hover, .summary-button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            background-color: var(--section-bg);
+            color: var(--text-color);
+            border: 1px solid var(--accent-color);
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            background-color: rgba(50, 50, 60, 0.7);
+        }
+
+        .tab-button.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        #summary {
+            white-space: pre-wrap;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .emoji {
+            margin-right: 5px;
+        }
+
+        .rules {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .selection-limit-warning {
+            color: #ff6b6b;
+            font-weight: bold;
+            display: none;
+            margin-top: 10px;
+        }
+
+        .section-description {
+            margin-bottom: 20px;
+        }
+
+        .conclusion {
+            font-style: italic;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .option-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .option-cost {
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌌 Cultivation CYOA</h1>
+            <p class="intro">The heavens do not speak, yet all things follow their will.<br>
+                Mountains float in seas of cloud. Stars hang above as silent judges.<br>
+                In the dark, beasts stir, and ancient spirits whisper to those who listen.</p>
+        </header>
+
+        <div class="points-tracker">
+            <span>Points Remaining: <span id="points-left">10</span>/10</span>
+            <button id="reset" class="reset-button">Reset All Choices</button>
+        </div>
+
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="intro">Introduction</button>
+            <button class="tab-button" data-tab="sects">Starting Sect</button>
+            <button class="tab-button" data-tab="abilities">Abilities</button>
+            <button class="tab-button" data-tab="martial">Martial Affinities</button>
+            <button class="tab-button" data-tab="goals">Goals</button>
+            <button class="tab-button" data-tab="summary-tab">Summary</button>
+        </div>
+
+        <!-- Introduction Section -->
+        <div id="intro" class="section">
+            <h2>🌱 Core Concept</h2>
+            <div class="section-description">
+                <p>You awaken into this world not as a common farmer's child, nor a destined reincarnation of an immortal, but something in between. You are a teenager of above-average talent—stronger than most, but not yet a prodigy.</p>
+                <p>The path ahead is yours to carve. You will face trials, temptations, tribulations. You may gain power, influence, and even immortality—or lose yourself in the pursuit of it.</p>
+                <p>You have ten points. Choose how you will walk the path of cultivation.</p>
+                
+                <p>Cultivation follows three primary paths:</p>
+                <ul>
+                    <li><strong>Body</strong> – Physical stats: strength, speed, endurance, resilience.</li>
+                    <li><strong>Mind/Spirit</strong> – Magical abilities, technique refinement, magical item control.</li>
+                    <li><strong>Soul</strong> – Unique innate powers, mental resistance, possession, karmic tools.</li>
+                </ul>
+
+                <p>Each cultivator progresses through seven major stages:</p>
+                <p>Qi Condensation → Foundation → Core Formation → Nascent Soul / Dao Formation → Earth → Heaven → Immortal</p>
+
+                <ul>
+                    <li>Every stage requires a major breakthrough through heavenly tribulation.</li>
+                    <li>Within each stage are minor breakthroughs (subrealms).</li>
+                    <li>Power scales through both additive level boosts and a multiplicative quality factor.</li>
+                    <li>A typical cultivator gets a flat 100% power increase per major stage.</li>
+                    <li>With excellent quality foundations, this can reach up to 300% per stage.</li>
+                </ul>
+
+                <p>The main benefit of cultivating multiple paths (body + mind + soul) is:</p>
+                <ul>
+                    <li>Diversity of abilities</li>
+                    <li>Stronger power scaling, pushing you toward the 3x cap</li>
+                </ul>
+            </div>
+
+            <h2>⚖️ World Notes</h2>
+            <div class="section-description">
+                <ul>
+                    <li><strong>Cultivation is rare and difficult.</strong> Only about 1 in 1,000 individuals possess the innate potential to become cultivators. Of those, only 10% advance at each major stage, with success highly contingent on natural talent, foundational cultivation, and access to proper instruction. Early cultivation—especially in one's youth—is significantly more effective, as the body and soul are more malleable and less burdened by karma or spiritual noise.</li>
+                    <li><strong>Power is earned, not given.</strong> Sects prioritize resources for exceptional disciples—those who show early talent or rapid breakthroughs. These favored few gain rare techniques, personal instruction, and freedom to cultivate. Everyone else is assigned duties: guarding borders, refining materials, teaching juniors. These responsibilities support the sect but drain time and energy from personal growth. Over time, this system creates a widening gap—and is a major reason so few ever reach the higher realms.</li>
+                    <li><strong>Tribulations are not just storms, but tests of fate and self.</strong> Advancement through stages is only possible by confronting trials, both internal and external. After Core Formation, true growth requires experience—combat, insight, heartbreak, or discovery. Seclusion alone becomes insufficient, a dead end without karmic interaction with the world.</li>
+                    <li><strong>The world is vast—seemingly without end.</strong> Rumors speak of oceans larger than kingdoms, of sky-locked realms atop moving mountains, and desert empires ruled by beasts older than sects. Yet even the most powerful cultivators admit they have only glimpsed a fraction of existence.</li>
+                    <li><strong>Immortals exist, but they are legends made flesh.</strong> Rare and inscrutable, they rarely govern kingdoms or lead armies. Most dwell in seclusion, chasing their own Daos, or dwelling in The City of Immortals, a mythical place said to exist beyond the constraints of time and space. Finding one may change your fate—or erase you from it.</li>
+                    <li><strong>Karma is real.</strong> To steal from the weak, betray allies, or harm without cause is to invite subtle misfortune. Though karmic punishment is rarely immediate, it accumulates—corrupting qi, twisting fate, and degrading breakthrough chances.</li>
+                    <li><strong>The Dao resists repetition.</strong> Each step along a given Dao becomes harder to retrace. Like a scholar writing a thesis, future cultivators must innovate or adapt to advance. Dual-path cultivation (e.g. Body+Soul) is rare but allows fresh perspectives, making breakthroughs easier by combining insights across disciplines.</li>
+                    <li><strong>There is no cheat, no fate-favored soul.</strong> This is a world without time travelers, reincarnators, or chosen ones. The Dao does not play favorites. You rise through your effort, vision, and willingness to walk through suffering.</li>
+                    <li><strong>Death is less common than in many xianxia settings;</strong> defeat often means retreat or humiliation. Honorable sects will avenge their disciples. As a result, fighting much weaker cultivators (1+ major realm below) is considered dishonorable, but demonic sects and rogues may still do it.</li>
+                </ul>
+
+                <p><strong>Resources are precious but less powerful than typical Xianxia:</strong></p>
+                <ul>
+                    <li>Alchemy – Boosts breakthrough success from ~30% to ~50%.</li>
+                    <li>Formations & Talismans – Add ~50% strength in same-realm confrontations.</li>
+                    <li>Divine Cooking – Temporarily doubles cultivation speed, but requires rare ingredients.</li>
+                    <li>High-Qi Zones – Up to 1.5x cultivation speed, though often controlled or contested.</li>
+                    <li>Patrons – Powerful backers can grant rare techniques and items in return for service or loyalty. However, excessive reliance can tether your destiny to theirs.</li>
+                </ul>
+            </div>
+
+            <div class="navigation">
+                <button class="prev-section hidden">Previous</button>
+                <button class="next-section">Next: Choose Starting Sect</button>
+            </div>
+        </div>
+
+        <!-- Sects Section -->
+        <div id="sects" class="section hidden">
+            <h2>🏯 Pick a Starting Sect</h2>
+            <div class="selection-limit-warning" id="sect-warning">You can only choose one sect!</div>
+            
+            <div class="option" data-type="sect" data-name="Divine Turtle Sect">
+                <div class="option-header">
+                    <div class="option-title"><span class="emoji">🐢</span> Divine Turtle Sect – The Path of Steady Righteousness</div>
+                </div>
+                <div class="option-description">
+                    <p>With a long and stable history, the Divine Turtle Sect stands as a regional hegemon that avoids mortal entanglements. As an orthodox sect, it offers a clear and structured path for its disciples. Cultivation is fast for those who follow the rules, and success in tournaments or quests can quickly earn the favor of elders—along with access to precious resources.</p>
+                    <p>Mentorship is central to the sect's culture: while you'll be guided by multiple teachers, you're also expected to teach yourself and others. Honor and discipline define this path; as a disciple, you're expected to uphold justice and conduct yourself as lawful good.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="sect" data-name="Peacock Sect">
+                <div class="option-header">
+                    <div class="option-title"><span class="emoji">🦚</span> Peacock Sect – The Court of Glamour and Influence</div>
+                </div>
+                <div class="option-description">
+                    <p>A rising power that governs a sprawling mortal empire, the Peacock Sect blends cultivation with courtly grandeur. Unlike many reclusive orders, this sect embraces worldly pleasures, servants, and a vast economy centered around cultivators as nobility.</p>
+                    <p>It is a deeply social sect, where many techniques flourish through bonds—love, loyalty, rivalry, or fame. One such technique draws passive qi from adoration, although its effects diminish in the higher realms.</p>
+                    <p>Magical professions thrive here, and the sect's famed auctions attract powerful cultivators seeking rare materials and prestige. Charm and strategy often matter as much as raw power.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="sect" data-name="Mountain Sect">
+                <div class="option-header">
+                    <div class="option-title"><span class="emoji">⛰️</span> Mountain Sect – The Way of the Relentless Peak</div>
+                </div>
+                <div class="option-description">
+                    <p>High in a storm-wreathed range, the Mountain Sect reveres strength, independence, and martial mastery. Its founder, said to still meditate within a perpetual qi storm, set the tone: the sect favors lone prodigies who forge their own path.</p>
+                    <p>Exceptional disciples can earn their own mountain peaks, enriched with spiritual qi that speeds cultivation. The wilderness surrounding the sect teems with spirit beasts and rare herbs, offering rich rewards for the daring.</p>
+                    <p>Trade is limited and support is scarce, but those who persist are respected not for their heritage or alliances—but for the path they carve with their own hands.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="sect" data-name="Hao Family Sect">
+                <div class="option-header">
+                    <div class="option-title"><span class="emoji">🐉</span> Hao Family Sect – Blood, Favor, and the Dragon's Shadow</div>
+                </div>
+                <div class="option-description">
+                    <p>Once a family of prodigies, now a growing sect with ties to a continental superpower, the Hao Family Sect blends bloodline privilege with elite cultivation. Recently opened to talented outsiders, the sect still leans heavily on kinship ties—those born into the family often receive the best resources and attention.</p>
+                    <p>However, even outsiders gain direct access to powerful mentors and advanced techniques. Many disciples eventually enter the ranks of the Divine Dragon Sect, serving as generals, tacticians, or emissaries.</p>
+                    <p>Ambition, loyalty, and pragmatic alliances define this sect. Just remember: family comes first.</p>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="prev-section">Previous: Introduction</button>
+                <button class="next-section">Next: Choose Abilities</button>
+            </div>
+        </div>
+
+        <!-- Abilities Section -->
+        <div id="abilities" class="section hidden">
+            <h2>🔹 Abilities</h2>
+            
+            <h3>🌱 Core Cultivation Enhancers</h3>
+            <div class="option" data-type="ability" data-cost="6" data-name="Passive Cultivation">
+                <div class="option-header">
+                    <div class="option-title">Passive Cultivation</div>
+                    <div class="option-cost">6 points</div>
+                </div>
+                <div class="option-description">
+                    <p>You passively cultivate at all times. This doesn't improve cultivation quality, but while a typical cultivator spends ~6 hours per day, you cultivate 24/7.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="4" data-name="Experience-Based Breakthroughs">
+                <div class="option-header">
+                    <div class="option-title">Experience-Based Breakthroughs</div>
+                    <div class="option-cost">4 points</div>
+                </div>
+                <div class="option-description">
+                    <p>All significant life experiences (battle, crafting, deep relationships, etc.) ease tribulations and raise your odds of breakthrough.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="3" data-name="Refined Body">
+                <div class="option-header">
+                    <div class="option-title">Refined Body</div>
+                    <div class="option-cost">3 points</div>
+                </div>
+                <div class="option-description">
+                    <p>Your body is free of impurities. You receive maximum benefit from body training and face fewer obstacles when breaking through.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="4" data-name="Perfect Technique">
+                <div class="option-header">
+                    <div class="option-title">Perfect Technique</div>
+                    <div class="option-cost">4 points</div>
+                </div>
+                <div class="option-description">
+                    <p>You always have access to a high-quality technique appropriate to your current level. This can accelerate cultivation speed up to 3x that of a typical technique.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="4" data-name="Divine Senses">
+                <div class="option-header">
+                    <div class="option-title">Divine Senses</div>
+                    <div class="option-cost">4 points</div>
+                </div>
+                <div class="option-description">
+                    <p>Your ability to sense qi is equivalent to someone two major realms higher. This enhances technique insight, enemy detection, and puzzle-solving.</p>
+                </div>
+            </div>
+
+            <h3>🧠 Balance & Dual Path Boosts</h3>
+            <div class="option" data-type="ability" data-cost="3" data-name="Balanced Mind–Body">
+                <div class="option-header">
+                    <div class="option-title">Balanced Mind–Body</div>
+                    <div class="option-cost">3 points</div>
+                </div>
+                <div class="option-description">
+                    <p>When you raise the level of either mind or body cultivation, the other increases to match it.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="3" data-name="Balanced Soul–Body">
+                <div class="option-header">
+                    <div class="option-title">Balanced Soul–Body</div>
+                    <div class="option-cost">3 points</div>
+                </div>
+                <div class="option-description">
+                    <p>When you raise the level of either soul or body cultivation, the other increases to match it.</p>
+                </div>
+            </div>
+
+            <h3>🧙‍♂️ Mentors & Guides</h3>
+            <div class="option" data-type="ability" data-cost="7" data-name="Master in a Ring">
+                <div class="option-header">
+                    <div class="option-title">Master in a Ring</div>
+                    <div class="option-cost">7 points</div>
+                </div>
+                <div class="option-description">
+                    <p>A friendly fallen Immortal resides within a ring. They will mentor, teach, and guide you until you can free them.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="5" data-name="Empty Vessel">
+                <div class="option-header">
+                    <div class="option-title">Empty Vessel</div>
+                    <div class="option-cost">5 points</div>
+                </div>
+                <div class="option-description">
+                    <p>You can host a Dao fragment in your soul. It assists with Dao-related breakthroughs and may suggest techniques within its specialty.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="3" data-name="Beast Bond">
+                <div class="option-header">
+                    <div class="option-title">Beast Bond</div>
+                    <div class="option-cost">3 points</div>
+                </div>
+                <div class="option-description">
+                    <p>Choose a non-divine spirit beast companion. It levels up with you, shares senses, and becomes sentient over time.</p>
+                </div>
+            </div>
+
+            <h3>⚒️ Crafting & Profession Affinities</h3>
+            <p class="rules">All grant faster learning and efficiency in the associated field.</p>
+            
+            <div class="option" data-type="ability" data-cost="2" data-name="Formation Affinity">
+                <div class="option-header">
+                    <div class="option-title">Formation Affinity</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="2" data-name="Talisman Affinity">
+                <div class="option-header">
+                    <div class="option-title">Talisman Affinity</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="2" data-name="Alchemy Affinity">
+                <div class="option-header">
+                    <div class="option-title">Alchemy Affinity</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="2" data-name="Refiner Affinity">
+                <div class="option-header">
+                    <div class="option-title">Refiner Affinity</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="2" data-name="Healer Affinity">
+                <div class="option-header">
+                    <div class="option-title">Healer Affinity</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="2" data-name="Puppet Affinity">
+                <div class="option-header">
+                    <div class="option-title">Puppet Affinity</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="2" data-name="Cooking Affinity">
+                <div class="option-header">
+                    <div class="option-title">Cooking Affinity</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+            </div>
+
+            <h3>🛡️ Defense & Survival</h3>
+            <div class="option" data-type="ability" data-cost="4" data-name="Body as Sanctuary">
+                <div class="option-header">
+                    <div class="option-title">Body as Sanctuary</div>
+                    <div class="option-cost">4 points</div>
+                </div>
+                <div class="option-description">
+                    <p>Greatly reduces damage from exotic sources: poisons, mental attacks, karmic backlash, and similar rare forces.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="2" data-name="Fluid Identity">
+                <div class="option-header">
+                    <div class="option-title">Fluid Identity</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+                <div class="option-description">
+                    <p>When entering a new region, you naturally gain a new identity. Local cultivators treat you as a stranger unless you use highly distinctive traits (e.g., unique techniques). This new identity is not tied to this region but can be used anywhere.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="1" data-name="Minimal Presence">
+                <div class="option-header">
+                    <div class="option-title">Minimal Presence</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>You leave barely any spiritual footprint when not actively cultivating or fighting such that qi senses within one major realm won't detect you. Ideal for staying under the radar, avoiding spiritual detection, or hiding in contested zones.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="1" data-name="Cloud Step Boots">
+                <div class="option-header">
+                    <div class="option-title">Cloud Step Boots</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>You have a minor innate mobility technique. You can make short-range jumps in mid-air or soften falls. Doesn't allow true flight, but excellent for terrain navigation and evasion.</p>
+                </div>
+            </div>
+
+            <h3>🧰 Additional Utility Picks</h3>
+            <div class="option" data-type="ability" data-cost="1" data-name="Pocket Dimension">
+                <div class="option-header">
+                    <div class="option-title">Pocket Dimension</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>A limited storage cube (~1 meter) that preserves items in stasis. Cannot store momentum or capture attacks.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="2" data-name="Qi Compass">
+                <div class="option-header">
+                    <div class="option-title">Qi Compass</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+                <div class="option-description">
+                    <p>You can instinctively sense the general direction of spiritual resources: herbs, artifacts, leyline flows, or nearby treasure. Doesn't pinpoint location, but always gives a subtle "pull" toward opportunity.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="2" data-name="Return">
+                <div class="option-header">
+                    <div class="option-title">Return</div>
+                    <div class="option-cost">2 points</div>
+                </div>
+                <div class="option-description">
+                    <p>Set up to three waypoints. If you are in a safe place, you can concentrate for ten minutes to teleport to any waypoint.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="ability" data-cost="1" data-name="Spiritual Appraisal">
+                <div class="option-header">
+                    <div class="option-title">Spiritual Appraisal</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>You can identify the general nature, age, and power of most magical items, formations, or herbs within one major realm of your Qi sense. Won't reveal hidden curses or full effects, but enough to avoid major mistakes.</p>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="prev-section">Previous: Choose Starting Sect</button>
+                <button class="next-section">Next: Choose Martial Affinities</button>
+            </div>
+        </div>
+
+        <!-- Martial Affinities Section -->
+        <div id="martial" class="section hidden">
+            <h2>⚔️ Martial Affinities</h2>
+            <div class="section-description">
+                <p>Each martial affinity grants faster learning, refined insight, and access to unique martial techniques. Ideal for cultivators who walk the path of direct combat. Your first martial affinity is free; each additional costs 1 point.</p>
+            </div>
+
+            <div class="option" data-type="martial" data-cost="1" data-name="Sword Affinity">
+                <div class="option-header">
+                    <div class="option-title">Sword Affinity</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>Swift, elegant, and precise. Sword users channel intent with clarity and seek perfection in motion.</p>
+                    <p><em>Example technique — Void-Cutting Slash:</em> Slice through energy constructs, low-tier formations, or illusions with focused intent.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="martial" data-cost="1" data-name="Spear Affinity">
+                <div class="option-header">
+                    <div class="option-title">Spear Affinity</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>Control distance and tempo. The spear is the cultivator's question: direct, unrelenting, and decisive.</p>
+                    <p><em>Example — Heaven-Piercing Thrust:</em> Launch a long-range thrust that bypasses terrain and strikes true.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="martial" data-cost="1" data-name="Fist Affinity">
+                <div class="option-header">
+                    <div class="option-title">Fist Affinity</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>Your body is your weapon. Focused on close-range power, reinforced qi, and sheer physical dominance.</p>
+                    <p><em>Example — Earth-Shaking Palm:</em> A concussive shockwave that disrupts footing and breaks enemy flow.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="martial" data-cost="1" data-name="Blade Affinity">
+                <div class="option-header">
+                    <div class="option-title">Blade Affinity</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>Aggression incarnate. Heavy weapons, cleaving momentum, and raw killing intent define the blade path.</p>
+                    <p><em>Example — Slaughter Aura:</em> Emit a wave of bloodlust that weakens the will of weaker enemies.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="martial" data-cost="1" data-name="Whip Affinity">
+                <div class="option-header">
+                    <div class="option-title">Whip Affinity</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>Mastery of flexibility and control. Whip cultivators bind, distract, and strike from unexpected angles.</p>
+                    <p><em>Example — Serpent Latch:</em> Temporarily bind a limb, artifact, or spiritual construct with snapping precision.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="martial" data-cost="1" data-name="Bow Affinity">
+                <div class="option-header">
+                    <div class="option-title">Bow Affinity</div>
+                    <div class="option-cost">1 point</div>
+                </div>
+                <div class="option-description">
+                    <p>Precision from afar. Arrows infused with qi strike targets before they know they've been seen.</p>
+                    <p><em>Example — Ghost Feather Shot:</em> Fires a silent, near-invisible arrow from afar.</p>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="prev-section">Previous: Choose Abilities</button>
+                <button class="next-section">Next: Choose Goals</button>
+            </div>
+        </div>
+
+        <!-- Goals Section -->
+        <div id="goals" class="section hidden">
+            <h2>🏆 Cultivator Goals</h2>
+            <div class="section-description">
+                <p>The Dao is infinite, but your journey must have direction. Choose a goal—or forge your own. These goals are not win conditions, but guiding stars that shape your path.</p>
+            </div>
+
+            <div class="option" data-type="goal" data-name="Found Your Own Sect">
+                <div class="option-header">
+                    <div class="option-title"><span class="emoji">🏯</span> Found Your Own Sect</div>
+                </div>
+                <div class="option-description">
+                    <p><strong>Goal:</strong> Establish a new sect with your personal philosophy or cultivation path at its core.</p>
+                    <p><strong>Requirements:</strong> Reach at least Dao Formation, gain territory, and earn disciples or allies.</p>
+                    <p><strong>Narrative Impact:</strong> Gain political influence, attract karmic enemies or rival sects. Your decisions now shape generations to come.</p>
+                    <p><strong>Best For:</strong> Balanced builds, social/political players, or legacy-seekers.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="goal" data-name="Protect the Realm">
+                <div class="option-header">
+                    <div class="option-title"><span class="emoji">🛡️</span> Protect the Realm</div>
+                </div>
+                <div class="option-description">
+                    <p><strong>Goal:</strong> Become a guardian of your sect, kingdom, or mortal domain. Repel invasions, resolve karmic threats, and defend the Dao of your homeland.</p>
+                    <p><strong>Requirements:</strong> Reach at least Core Formation, gain recognition as a protector, and overcome one major external threat.</p>
+                    <p><strong>Narrative Impact:</strong> Earn karmic merit, spiritual recognition, and potential patronage from immortals.</p>
+                    <p><strong>Best For:</strong> Lawful characters, honor-based builds, Divine Turtle Sect disciples.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="goal" data-name="Forge a Personal Dao">
+                <div class="option-header">
+                    <div class="option-title"><span class="emoji">🌀</span> Forge a Personal Dao</div>
+                </div>
+                <div class="option-description">
+                    <p><strong>Goal:</strong> Develop a unique understanding of existence and embody it fully—transforming into a true cultivator of the Dao.</p>
+                    <p><strong>Requirements:</strong> Survive to at least Earth stage and undergo a soul tribulation to define your Dao.</p>
+                    <p><strong>Narrative Impact:</strong> Unlocks special techniques, altered cultivation path, and potentially attracts the attention (or wrath) of heaven.</p>
+                    <p><strong>Best For:</strong> Soul or hybrid cultivators, philosophers, iconoclasts.</p>
+                </div>
+            </div>
+
+            <div class="option" data-type="goal" data-name="Enter the City of Immortals">
+                <div class="option-header">
+                    <div class="option-title"><span class="emoji">🏙️</span> Enter the City of Immortals</div>
+                </div>
+                <div class="option-description">
+                    <p><strong>Goal:</strong> Reach the legendary city where immortals dwell and uncover its truths—or become one of its denizens.</p>
+                    <p><strong>Requirements:</strong> Reach Immortal stage <em>or</em> uncover a hidden path via fated encounters, rare items, or heavenly guidance.</p>
+                    <p><strong>Narrative Impact:</strong> Ends the mortal cultivation journey; start a new arc with divine politics, cosmic responsibility, or transcendence.</p>
+                    <p><strong>Best For:</strong> Endgame characters, wanderers, fate-chosen.</p>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="prev-section">Previous: Martial Affinities</button>
+                <button class="next-section">View Summary</button>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div id="summary-tab" class="section hidden">
+            <h2>📜 Your Path Summary</h2>
+            <div id="summary">Your selections will appear here...</div>
+            <button id="summary-button" class="summary-button">Generate Summary</button>
+            
+            <div class="conclusion">
+                <p>The stars remain silent, yet their gaze is eternal.</p>
+                <p>The wind stirs in ancient forests. Somewhere, a beast awakens. A rival is born. A chance encounter waits.</p>
+                <p>You have chosen your path—narrow or broad, honorable or shadowed. Ten points spent, one destiny set in motion.</p>
+                <p>Ahead lies hardship, wonder, temptation, and revelation. The Dao is not given. It must be grasped.</p>
+                <p>Whether you seek enlightenment, vengeance, legacy, or transcendence...</p>
+                <p><strong>Walk your path. Endure your tribulations. Defy the heavens—or rise to join them.</strong></p>
+            </div>
+            
+            <div class="navigation">
+                <button class="prev-section">Previous: Goals</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let pointsLeft = 10;
+            const pointsDisplay = document.getElementById('points-left');
+            const selections = {
+                sect: null,
+                abilities: [],
+                martial: [],
+                goal: null
+            };
+            let firstMartialFree = true;
+
+            // Tab Navigation
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const sections = document.querySelectorAll('.section');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Hide all sections
+                    sections.forEach(section => {
+                        section.classList.add('hidden');
+                    });
+                    
+                    // Remove active class from all buttons
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Show the selected section
+                    document.getElementById(tabId).classList.remove('hidden');
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                });
+            });
+
+            // Previous/Next Navigation
+            const prevButtons = document.querySelectorAll('.prev-section');
+            const nextButtons = document.querySelectorAll('.next-section');
+            
+            prevButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const currentSection = this.closest('.section');
+                    const currentIndex = Array.from(sections).indexOf(currentSection);
+                    
+                    if (currentIndex > 0) {
+                        const prevSection = sections[currentIndex - 1];
+                        
+                        // Hide current section
+                        currentSection.classList.add('hidden');
+                        
+                        // Show previous section
+                        prevSection.classList.remove('hidden');
+                        
+                        // Update tab buttons
+                        updateTabButtons(prevSection.id);
+                    }
+                });
+            });
+            
+            nextButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const currentSection = this.closest('.section');
+                    const currentIndex = Array.from(sections).indexOf(currentSection);
+                    
+                    if (currentIndex < sections.length - 1) {
+                        const nextSection = sections[currentIndex + 1];
+                        
+                        // Hide current section
+                        currentSection.classList.add('hidden');
+                        
+                        // Show next section
+                        nextSection.classList.remove('hidden');
+                        
+                        // Update tab buttons
+                        updateTabButtons(nextSection.id);
+                    }
+                });
+            });
+            
+            function updateTabButtons(sectionId) {
+                tabButtons.forEach(button => {
+                    if (button.getAttribute('data-tab') === sectionId) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+            }
+
+            // Option Selection
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    const type = this.getAttribute('data-type');
+                    const name = this.getAttribute('data-name');
+                    const cost = parseInt(this.getAttribute('data-cost')) || 0;
+                    
+                    if (type === 'sect') {
+                        // For sects, only allow one selection
+                        if (this.classList.contains('selected')) {
+                            // Deselect
+                            this.classList.remove('selected');
+                            selections.sect = null;
+                        } else {
+                            // First, remove selection from all other sect options
+                            document.querySelectorAll('.option[data-type="sect"].selected').forEach(selected => {
+                                selected.classList.remove('selected');
+                            });
+                            
+                            // Select this one
+                            this.classList.add('selected');
+                            selections.sect = name;
+                        }
+                        
+                        // Hide warning if a selection is made
+                        document.getElementById('sect-warning').style.display = 'none';
+                    } else if (type === 'goal') {
+                        // For goals, only allow one selection
+                        if (this.classList.contains('selected')) {
+                            // Deselect
+                            this.classList.remove('selected');
+                            selections.goal = null;
+                        } else {
+                            // First, remove selection from all other goal options
+                            document.querySelectorAll('.option[data-type="goal"].selected').forEach(selected => {
+                                selected.classList.remove('selected');
+                            });
+                            
+                            // Select this one
+                            this.classList.add('selected');
+                            selections.goal = name;
+                        }
+                    } else if (type === 'martial') {
+                        // For martial affinities, the first one is free
+                        if (this.classList.contains('selected')) {
+                            // Deselect
+                            this.classList.remove('selected');
+                            
+                            const index = selections.martial.indexOf(name);
+                            if (index > -1) {
+                                selections.martial.splice(index, 1);
+                            }
+                            
+                            // If this was the only martial selection, reset firstMartialFree
+                            if (selections.martial.length === 0) {
+                                firstMartialFree = true;
+                            }
+                            
+                            // If this wasn't the free pick, refund the point
+                            if (!firstMartialFree || selections.martial.length > 0) {
+                                pointsLeft += cost;
+                                pointsDisplay.textContent = pointsLeft;
+                            }
+                        } else {
+                            // Check if we have enough points
+                            let actualCost = cost;
+                            if (firstMartialFree && selections.martial.length === 0) {
+                                actualCost = 0;
+                                firstMartialFree = false;
+                            }
+                            
+                            if (pointsLeft >= actualCost) {
+                                // Select this one
+                                this.classList.add('selected');
+                                selections.martial.push(name);
+                                
+                                // Deduct points
+                                pointsLeft -= actualCost;
+                                pointsDisplay.textContent = pointsLeft;
+                            }
+                        }
+                    } else if (type === 'ability') {
+                        // For abilities, each has a cost
+                        if (this.classList.contains('selected')) {
+                            // Deselect
+                            this.classList.remove('selected');
+                            
+                            const index = selections.abilities.indexOf(name);
+                            if (index > -1) {
+                                selections.abilities.splice(index, 1);
+                            }
+                            
+                            // Refund points
+                            pointsLeft += cost;
+                            pointsDisplay.textContent = pointsLeft;
+                        } else {
+                            // Check if we have enough points
+                            if (pointsLeft >= cost) {
+                                // Select this one
+                                this.classList.add('selected');
+                                selections.abilities.push(name);
+                                
+                                // Deduct points
+                                pointsLeft -= cost;
+                                pointsDisplay.textContent = pointsLeft;
+                            }
+                        }
+                    }
+                    
+                    updateOptions();
+                });
+            });
+
+            // Reset Button
+            document.getElementById('reset').addEventListener('click', function() {
+                pointsLeft = 10;
+                pointsDisplay.textContent = pointsLeft;
+                
+                selections.sect = null;
+                selections.abilities = [];
+                selections.martial = [];
+                selections.goal = null;
+                
+                firstMartialFree = true;
+                
+                // Remove all selections
+                document.querySelectorAll('.option.selected').forEach(selected => {
+                    selected.classList.remove('selected');
+                });
+                
+                updateOptions();
+                
+                // Reset summary
+                document.getElementById('summary').textContent = 'Your selections will appear here...';
+            });
+
+            // Summary Button
+            document.getElementById('summary-button').addEventListener('click', function() {
+                const summaryElement = document.getElementById('summary');
+                let summaryText = '';
+                
+                if (selections.sect) {
+                    summaryText += `📍 **Starting Sect:** ${selections.sect}\n\n`;
+                } else {
+                    summaryText += `📍 **Starting Sect:** None selected\n\n`;
+                }
+                
+                if (selections.abilities.length > 0) {
+                    summaryText += `🔹 **Abilities:**\n`;
+                    selections.abilities.forEach(ability => {
+                        summaryText += `- ${ability}\n`;
+                    });
+                    summaryText += '\n';
+                } else {
+                    summaryText += `🔹 **Abilities:** None selected\n\n`;
+                }
+                
+                if (selections.martial.length > 0) {
+                    summaryText += `⚔️ **Martial Affinities:**\n`;
+                    selections.martial.forEach(martial => {
+                        summaryText += `- ${martial}\n`;
+                    });
+                    summaryText += '\n';
+                } else {
+                    summaryText += `⚔️ **Martial Affinities:** None selected\n\n`;
+                }
+                
+                if (selections.goal) {
+                    summaryText += `🏆 **Cultivation Goal:** ${selections.goal}\n`;
+                } else {
+                    summaryText += `🏆 **Cultivation Goal:** None selected\n`;
+                }
+                
+                summaryText += `\n💰 **Points Remaining:** ${pointsLeft}/10`;
+                
+                summaryElement.textContent = summaryText;
+            });
+
+            // Update option availability based on points
+            function updateOptions() {
+                options.forEach(option => {
+                    const type = option.getAttribute('data-type');
+                    if (type === 'ability' || type === 'martial') {
+                        const cost = parseInt(option.getAttribute('data-cost')) || 0;
+                        
+                        // Skip martial if it's the first free pick
+                        if (type === 'martial' && firstMartialFree && selections.martial.length === 0) {
+                            option.classList.remove('disabled');
+                            return;
+                        }
+                        
+                        if (cost > pointsLeft && !option.classList.contains('selected')) {
+                            option.classList.add('disabled');
+                        } else {
+                            option.classList.remove('disabled');
+                        }
+                    }
+                });
+            }
+
+            // Initialize
+            updateOptions();
+        });
+    </script>
+</body>
+</html>
